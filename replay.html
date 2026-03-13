@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Writing Process Recorder - Replay</title>
+  <link rel="stylesheet" href="styles/base.css">
+</head>
+<body>
+  <main class="container">
+    <header class="header">
+      <h1>Replay</h1>
+      <p>Reconstruct writing from recorded edit events.</p>
+    </header>
+
+    <section class="panel">
+      <label for="replayText">Replay output</label>
+      <pre id="replayText" class="replay-text" aria-label="Replay output"></pre>
+    </section>
+
+    <section class="toolbar panel">
+      <button id="playBtn" type="button">Play</button>
+      <button id="pauseBtn" type="button">Pause</button>
+      <label for="speedSelect">Speed</label>
+      <select id="speedSelect">
+        <option value="0.5">0.5x</option>
+        <option value="1" selected>1x</option>
+        <option value="2">2x</option>
+        <option value="5">5x</option>
+      </select>
+      <label class="file-label" for="replayImportFile">Import JSON</label>
+      <input id="replayImportFile" type="file" accept="application/json,.json">
+      <button id="backBtn" type="button">Back to Compose</button>
+    </section>
+
+    <section class="panel status-wrap" aria-live="polite">
+      <div id="status" class="status">Ready.</div>
+      <div id="metrics" class="metrics">Events: 0 | Cursor: 0</div>
+    </section>
+  </main>
+
+  <script src="js/model.js"></script>
+  <script src="js/replay.js"></script>
+</body>
+</html>
