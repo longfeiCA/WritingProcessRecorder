@@ -6,6 +6,7 @@
 
   var editor = document.getElementById("editor");
   var undoBtn = document.getElementById("undoBtn");
+  var newSessionBtn = document.getElementById("newSessionBtn");
   var saveBtn = document.getElementById("saveBtn");
   var importFile = document.getElementById("importFile");
   var toReplayBtn = document.getElementById("toReplayBtn");
@@ -99,6 +100,14 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(makeSession()));
     } catch (err) {
       setStatus("Could not store session in localStorage: " + err.message, true);
+    }
+  }
+
+  function clearSessionFromLocalStorage() {
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch (err) {
+      setStatus("Could not clear local session: " + err.message, true);
     }
   }
 
@@ -264,6 +273,32 @@
     reader.readAsText(file);
   }
 
+  function handleNewSession() {
+    if (events.length > 0) {
+      var shouldReset = global.confirm(
+        "You have recorded edits in this session. Save JSON first to avoid data loss. Start a new session and clear local storage?"
+      );
+      if (!shouldReset) {
+        setStatus("New session canceled.", false);
+        return;
+      }
+    }
+
+    events = [];
+    actionSizes = [];
+    editor.value = "";
+    prevText = "";
+    sessionStartTime = Date.now();
+    pendingInputMeta.inputType = "";
+    pendingInputMeta.selectionStart = 0;
+    pendingInputMeta.selectionEnd = 0;
+
+    clearSessionFromLocalStorage();
+    updateMetrics();
+    setStatus("Started a new session.", false);
+    editor.focus();
+  }
+
   function goToReplay() {
     persistToLocalStorage();
     var theme = document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
@@ -295,6 +330,7 @@
 
     editor.addEventListener("input", handleInput);
     undoBtn.addEventListener("click", handleUndo);
+    newSessionBtn.addEventListener("click", handleNewSession);
     saveBtn.addEventListener("click", handleSave);
     importFile.addEventListener("change", handleImportChange);
     toReplayBtn.addEventListener("click", goToReplay);
