@@ -9,28 +9,34 @@
       var theme = "";
       var params = new URLSearchParams(window.location.search);
       var fromQuery = params.get("theme");
+      var fromStorage = "";
+      var fromWindowName = "";
+
       if (fromQuery === "light" || fromQuery === "dark") {
         theme = fromQuery;
-      }
-
-      if (!theme) {
-        try {
-          var fromStorage = localStorage.getItem("wpr:theme");
-          if (fromStorage === "light" || fromStorage === "dark") {
-            theme = fromStorage;
-          }
-        } catch (err) {
-        }
       }
 
       if (!theme && window.name) {
         try {
           var parsed = JSON.parse(window.name);
           if (parsed && (parsed.theme === "light" || parsed.theme === "dark")) {
-            theme = parsed.theme;
+            fromWindowName = parsed.theme;
           }
         } catch (err) {
         }
+      }
+
+      if (!theme && fromWindowName) {
+        theme = fromWindowName;
+      }
+
+      try {
+        fromStorage = localStorage.getItem("wpr:theme") || "";
+      } catch (err) {
+      }
+
+      if (!theme && (fromStorage === "light" || fromStorage === "dark")) {
+        theme = fromStorage;
       }
 
       if (!theme) {

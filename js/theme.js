@@ -33,6 +33,22 @@
     return isValidTheme(value) ? value : "";
   }
 
+  function removeThemeQueryFromUrl() {
+    if (!global.history || typeof global.history.replaceState !== "function") {
+      return;
+    }
+
+    var params = new URLSearchParams(global.location.search);
+    if (!params.has("theme")) {
+      return;
+    }
+
+    params.delete("theme");
+    var query = params.toString();
+    var nextUrl = global.location.pathname + (query ? "?" + query : "") + global.location.hash;
+    global.history.replaceState(null, "", nextUrl);
+  }
+
   function getThemeFromWindowName() {
     if (!global.name) {
       return "";
@@ -136,14 +152,17 @@
     var queryTheme = getThemeFromQuery();
     var storedTheme = getStoredTheme();
     var windowNameTheme = getThemeFromWindowName();
-    var initialTheme = queryTheme || storedTheme || windowNameTheme || getSystemTheme();
+    var initialTheme = queryTheme || windowNameTheme || storedTheme || getSystemTheme();
 
-    if (queryTheme) {
+    if (queryTheme || windowNameTheme) {
       hasStoredPreference = true;
-      persistTheme(queryTheme);
+      persistTheme(initialTheme);
+    } else if (storedTheme) {
+      hasStoredPreference = true;
     }
 
     applyTheme(initialTheme, false);
+    removeThemeQueryFromUrl();
 
     if (toggleBtn) {
       toggleBtn.addEventListener("click", toggleTheme);
