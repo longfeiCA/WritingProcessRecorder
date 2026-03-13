@@ -230,7 +230,8 @@
   }
 
   function backToCompose() {
-    location.href = "index.html";
+    var theme = document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
+    location.href = "index.html?theme=" + encodeURIComponent(theme);
   }
 
   function setup() {

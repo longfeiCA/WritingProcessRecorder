@@ -266,7 +266,8 @@
 
   function goToReplay() {
     persistToLocalStorage();
-    location.href = "replay.html";
+    var theme = document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
+    location.href = "replay.html?theme=" + encodeURIComponent(theme);
   }
 
   function loadFromLocalStorageIfAny() {

@@ -4,12 +4,56 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Writing Process Recorder - Replay</title>
+  <script>
+    (function initEarlyTheme() {
+      var theme = "";
+      var params = new URLSearchParams(window.location.search);
+      var fromQuery = params.get("theme");
+      if (fromQuery === "light" || fromQuery === "dark") {
+        theme = fromQuery;
+      }
+
+      if (!theme) {
+        try {
+          var fromStorage = localStorage.getItem("wpr:theme");
+          if (fromStorage === "light" || fromStorage === "dark") {
+            theme = fromStorage;
+          }
+        } catch (err) {
+        }
+      }
+
+      if (!theme && window.name) {
+        try {
+          var parsed = JSON.parse(window.name);
+          if (parsed && (parsed.theme === "light" || parsed.theme === "dark")) {
+            theme = parsed.theme;
+          }
+        } catch (err) {
+        }
+      }
+
+      if (!theme) {
+        theme = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      }
+
+      document.documentElement.setAttribute("data-theme", theme);
+    })();
+  </script>
   <link rel="stylesheet" href="styles/base.css">
 </head>
 <body>
   <main class="container">
     <header class="header">
-      <h1>Replay</h1>
+      <div class="header-top">
+        <h1>Replay</h1>
+        <button id="themeToggle" class="icon-btn" type="button" aria-label="Toggle theme" aria-pressed="false" title="Switch to dark theme">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M4 19h3V10H4v9zm6 0h3V5h-3v14zm6 0h3v-7h-3v7z"></path>
+          </svg>
+          <span id="themeLabel">Light</span>
+        </button>
+      </div>
       <p>Reconstruct writing from recorded edit events.</p>
     </header>
 
@@ -56,6 +100,7 @@
     </section>
   </main>
 
+  <script src="js/theme.js"></script>
   <script src="js/model.js"></script>
   <script src="js/replay.js"></script>
 </body>
