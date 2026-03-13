@@ -75,7 +75,7 @@
       return;
     }
 
-    var prevT = cursor === 0 ? 0 : events[cursor - 1].t;
+    var prevT = cursor === 0 ? events[0].t : events[cursor - 1].t;
     var delay = Math.max(0, (events[cursor].t - prevT) / speed);
 
     timerId = setTimeout(function onTick() {
