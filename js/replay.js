@@ -9,6 +9,8 @@
   var speedSelect = document.getElementById("speedSelect");
   var replayImportFile = document.getElementById("replayImportFile");
   var backBtn = document.getElementById("backBtn");
+  var progressBar = document.getElementById("progressBar");
+  var progressText = document.getElementById("progressText");
   var statusEl = document.getElementById("status");
   var metricsEl = document.getElementById("metrics");
 
@@ -27,12 +29,24 @@
   }
 
   function updateMetrics() {
-    metricsEl.textContent = "Events: " + events.length + " | Cursor: " + cursor;
+    var percent = events.length === 0 ? 0 : Math.round((cursor / events.length) * 100);
+    metricsEl.textContent = "Events: " + events.length + " | Cursor: " + cursor + " | " + percent + "%";
+  }
+
+  function updateProgressUI() {
+    var max = events.length;
+    progressBar.max = String(max);
+    progressBar.value = String(Math.min(cursor, max));
+    progressBar.disabled = max === 0;
+
+    var percent = max === 0 ? 0 : Math.round((cursor / max) * 100);
+    progressText.textContent = percent + "%";
   }
 
   function renderText() {
     replayText.textContent = currentText;
     updateMetrics();
+    updateProgressUI();
   }
 
   function clearPlaybackTimer() {
@@ -103,6 +117,28 @@
     isPlaying = false;
     clearPlaybackTimer();
     setStatus("Replay paused.", false);
+  }
+
+  function seekToCursor(nextCursor, keepPlaying) {
+    var clampedCursor = Math.max(0, Math.min(nextCursor, events.length));
+    var wasPlaying = isPlaying;
+
+    clearPlaybackTimer();
+    isPlaying = false;
+    cursor = clampedCursor;
+
+    try {
+      currentText = global.WPRModel.replayEvents(events.slice(0, cursor));
+      renderText();
+    } catch (err) {
+      setStatus("Seek failed: " + err.message, true);
+      return;
+    }
+
+    if (keepPlaying && wasPlaying) {
+      isPlaying = true;
+      scheduleNext();
+    }
   }
 
   function applyLoadedSession(nextSession, sourceLabel) {
@@ -176,6 +212,23 @@
     }
   }
 
+  function onProgressInput() {
+    var nextCursor = Number(progressBar.value);
+    if (!Number.isFinite(nextCursor)) {
+      return;
+    }
+    seekToCursor(nextCursor, true);
+  }
+
+  function onProgressChange() {
+    var max = events.length;
+    if (max === 0) {
+      return;
+    }
+    var percent = Math.round((cursor / max) * 100);
+    setStatus("Jumped to " + percent + "%.", false);
+  }
+
   function backToCompose() {
     location.href = "index.html";
   }
@@ -188,6 +241,8 @@
     speedSelect.addEventListener("change", onSpeedChange);
     replayImportFile.addEventListener("change", onReplayImportChange);
     backBtn.addEventListener("click", backToCompose);
+    progressBar.addEventListener("input", onProgressInput);
+    progressBar.addEventListener("change", onProgressChange);
 
     renderText();
     loadFromLocalStorage();

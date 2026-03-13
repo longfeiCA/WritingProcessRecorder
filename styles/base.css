@@ -127,6 +127,15 @@ input[type="file"] {
   gap: 8px;
 }
 
+.progress-panel {
+  display: grid;
+  gap: 8px;
+}
+
+#progressBar {
+  width: 100%;
+}
+
 .status {
   color: var(--muted);
 }

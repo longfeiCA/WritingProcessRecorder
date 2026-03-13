@@ -27,10 +27,27 @@
         <option value="1" selected>1x</option>
         <option value="2">2x</option>
         <option value="5">5x</option>
+        <option value="10">10x</option>
+        <option value="20">20x</option>
       </select>
       <label class="file-label" for="replayImportFile">Import JSON</label>
       <input id="replayImportFile" type="file" accept="application/json,.json">
       <button id="backBtn" type="button">Back to Compose</button>
+    </section>
+
+    <section class="panel progress-panel">
+      <label for="progressBar">Progress</label>
+      <input
+        id="progressBar"
+        type="range"
+        min="0"
+        max="0"
+        value="0"
+        step="1"
+        disabled
+        aria-label="Replay progress"
+      >
+      <div id="progressText" class="metrics">0%</div>
     </section>
 
     <section class="panel status-wrap" aria-live="polite">
