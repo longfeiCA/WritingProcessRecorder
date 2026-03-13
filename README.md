@@ -2,6 +2,8 @@
 
 A fully local, browser-based application designed to record and replay the writing process. The software captures all text editing operations performed during writing and allows the entire document evolution to be replayed later. It is ideal for writing research, behavior analysis, and educational studies.
 
+[Try the App](https://longfeica.github.io/WritingProcessRecorder/)
+
 ## Features
 
 - **Compose Interface**: A plain text editor that silently records all text editing operations (insertions and deletions) with millisecond precision.
