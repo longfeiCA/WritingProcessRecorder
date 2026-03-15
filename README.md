@@ -9,6 +9,7 @@ A fully local, browser-based application designed to record and replay the writi
 - **Compose Interface**: A plain text editor that silently records all text editing operations (insertions and deletions) with millisecond precision.
 - **Replay Interface**: Watch the document evolve from an empty state to the final text, step-by-step. Features play, pause, scrubbing, and playback speed controls (1x to 50x, default 5x).
 - **Replay Pause Compression**: Replay delay uses timestamp gaps with practical caps for long pauses: gaps up to 10s play as-is, gaps between 10s and 10min play as 10s, and gaps at or above 10min play as 20s (then scaled by speed).
+- **Replay Statistics Panel**: Replay includes derived session analytics without changing the JSON schema: total duration, effective writing duration (pause capped at 5 minutes per gap), long-pause count (>5 minutes) with cursor intervals (e.g., `11-12`), deletion rate (`deleted chars / inserted chars`), and likely paste event count with cursor positions.
 - **Local Data Control**: Save the writing session locally as a JSON file, and import it back anytime.
 - **Event Compression**: Optimizes session logs by smartly merging continuous typing operations while preserving exact editing behavior.
 - **Fully Local & Private**: Runs entirely in the browser using standard web APIs. No backend, no databases, no user accounts, and zero server storage.
@@ -28,9 +29,11 @@ Since it is a pure frontend application, no build tools or servers are required.
 - `styles/base.css` - Shared styling, layout, and responsive behavior.
 - `js/model.js` - Core data model, event application logic, and JSON schema validation.
 - `js/compose.js` - Event capture, compression logic, undo behavior, and import/export functionality.
-- `js/replay.js` - Playback scheduler, timeline scrubbing, and UI control wiring.
+- `js/replay.js` - Playback scheduler, timeline scrubbing, and replay-side derived statistics.
 - `js/theme.js` - Handles switching between light and dark themes.
 
 ## Data Format
 
 Writing sessions are stored as a JSON object containing the document's final state and an array of sequential edit events (`insert` or `delete`) with precise timestamps and text positions. This ensures the editing process can be accurately reconstructed without storing extraneous data like mouse movements.
+
+Replay statistics are computed from existing events at load time, so no additional fields are required in exported JSON files.

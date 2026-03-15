@@ -52,6 +52,7 @@ From a responsibility perspective, this is a lightweight **two-page + shared-mod
   - Replays events with time-gap scheduling, speed control, and pause.
   - Supports progress bar seek (`events.slice(0, cursor)` reconstruction).
   - Updates status and metrics (event count, cursor, percentage).
+  - Computes replay-side statistics from existing events (no JSON schema change).
 
 - `js/theme.js`
   - Theme priority: query param -> `window.name` -> `localStorage` -> system theme.
@@ -153,6 +154,7 @@ Key state in `replay.js`:
 - `currentText`: currently rendered text.
 - `isPlaying` / `timerId`: playback control state.
 - `speed`: playback multiplier, default `5`.
+- statistics DOM refs and thresholds for analytics (effective pause cap and likely-paste heuristics).
 
 ### 5.1 Playback Scheduling
 
@@ -177,6 +179,22 @@ Core function: `scheduleNext()`
 1. On page load, try `localStorage["wpr:lastSession"]` first.
 2. User can import JSON at any time to replace current session.
 3. Imported session is saved back to local cache to keep Compose/Replay aligned.
+
+### 5.4 Replay Statistics Panel
+
+The replay page includes a bottom statistics panel derived from `events` only (no extra persisted fields):
+
+- **Total duration**: timestamp of the last event (`events[events.length - 1].t`), or `0` for empty sessions.
+- **Effective writing duration**: sum of per-gap `min(gap, 5min)` where `gap` is the interval between adjacent event timestamps (with `0 -> firstEvent.t` for the first gap).
+- **Pause count (>5m)**: number of gaps strictly larger than 5 minutes.
+- **Pause cursors**: interval markers like `11-12` (between event 11 and 12); first-gap pauses are marked `start-1`.
+- **Deletion rate**: `totalDeletedChars / totalInsertedChars`; for zero inserted chars, displays `0%` to avoid division-by-zero.
+- **Likely paste events** (heuristic): insert events with either
+  - `text.length >= 20` and containing `\n` or `\t`, or
+  - `text.length >= 80`.
+- **Likely paste cursors**: 1-based cursor indices of matched insert events.
+
+These metrics are recomputed whenever a session is loaded (from local storage or imported file).
 
 ## 6. Theme and Cross-Page State Transfer
 
@@ -203,7 +221,7 @@ For the current local research-tool scope, this implementation is simple and mai
 
 ## 9. Extension Opportunities (Based on Current Code)
 
-- **Analytics**: add pause-duration, deletion-rate, and revision-density metrics over `events`.
+- **Analytics**: add burst segmentation, rolling typing speed, and revision-density heatmaps over `events`.
 - **Data versioning**: `version` is already present; migration functions can support historical JSON formats.
 - **Replay enhancements**: sentence/paragraph jumps, key-event markers, and hotspot visualizations.
 - **Performance improvements**: segmented snapshots and background precomputation for replay.
