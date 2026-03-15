@@ -17,11 +17,24 @@
   var session = null;
   var events = [];
 
-  var speed = 1;
+  var TEN_SECONDS_MS = 10 * 1000;
+  var TEN_MINUTES_MS = 10 * 60 * 1000;
+
+  var speed = 5;
   var timerId = null;
   var isPlaying = false;
   var cursor = 0;
   var currentText = "";
+
+  function mapGapForReplay(rawGapMs) {
+    if (rawGapMs <= TEN_SECONDS_MS) {
+      return rawGapMs;
+    }
+    if (rawGapMs < TEN_MINUTES_MS) {
+      return TEN_SECONDS_MS;
+    }
+    return 2 * TEN_SECONDS_MS;
+  }
 
   function setStatus(message, isError) {
     statusEl.textContent = message;
@@ -76,7 +89,9 @@
     }
 
     var prevT = cursor === 0 ? events[0].t : events[cursor - 1].t;
-    var delay = Math.max(0, (events[cursor].t - prevT) / speed);
+    var rawGapMs = events[cursor].t - prevT;
+    var mappedGapMs = mapGapForReplay(rawGapMs);
+    var delay = Math.max(0, mappedGapMs / speed);
 
     timerId = setTimeout(function onTick() {
       try {
