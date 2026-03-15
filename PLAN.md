@@ -184,7 +184,7 @@ This avoids requiring export/import for immediate replay.
 - `pre#replayText`
 - `button#playBtn`
 - `button#pauseBtn`
-- `select#speedSelect` (`0.5`, `1`, `2`, `5`)
+- `select#speedSelect` (`1`, `2`, `5`, `10`, `20`, `50`; default `5`)
 - `button#backBtn`
 - `input#replayImportFile` (optional direct import)
 
@@ -198,8 +198,12 @@ This avoids requiring export/import for immediate replay.
 - State: `isPlaying`, `cursor`, `currentText`, `timerId`, `speed`.
 - On Play:
   - if first run: reset to empty text, `cursor=0`
-  - schedule next event using delta time:
-    - `delay = (events[i].t - events[i-1].t) / speed`
+  - schedule next event using mapped delta time:
+    - `rawGap = events[i].t - events[i-1].t`
+    - if `rawGap <= 10s`, `mappedGap = rawGap`
+    - if `rawGap > 10s` and `< 10min`, `mappedGap = 10s`
+    - if `rawGap >= 10min`, `mappedGap = 20s`
+    - `delay = mappedGap / speed`
   - apply event, render text, increment cursor, schedule next
 - On Pause:
   - clear pending timer, keep current state

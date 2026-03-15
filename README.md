@@ -7,7 +7,8 @@ A fully local, browser-based application designed to record and replay the writi
 ## Features
 
 - **Compose Interface**: A plain text editor that silently records all text editing operations (insertions and deletions) with millisecond precision.
-- **Replay Interface**: Watch the document evolve from an empty state to the final text, step-by-step. Features play, pause, scrubbing, and playback speed controls (0.5x to 20x).
+- **Replay Interface**: Watch the document evolve from an empty state to the final text, step-by-step. Features play, pause, scrubbing, and playback speed controls (1x to 50x, default 5x).
+- **Replay Pause Compression**: Replay delay uses timestamp gaps with practical caps for long pauses: gaps up to 10s play as-is, gaps between 10s and 10min play as 10s, and gaps at or above 10min play as 20s (then scaled by speed).
 - **Local Data Control**: Save the writing session locally as a JSON file, and import it back anytime.
 - **Event Compression**: Optimizes session logs by smartly merging continuous typing operations while preserving exact editing behavior.
 - **Fully Local & Private**: Runs entirely in the browser using standard web APIs. No backend, no databases, no user accounts, and zero server storage.

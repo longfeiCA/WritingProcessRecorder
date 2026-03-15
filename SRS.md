@@ -2,8 +2,8 @@
 
 **Software Requirements Specification (SRS)**
 
-Version: 1.0  
-Date: 2026-03-13
+Version: 1.1  
+Date: 2026-03-15
 
 ---
 
@@ -420,11 +420,23 @@ Recommended additional controls:
 Example speeds:
 
 ```
-0.5x
 1x
 2x
 5x
+10x
+20x
+50x
 ```
+
+Default speed is 5x.
+
+Replay timing policy:
+
+- if event gap `<= 10s`, use original gap
+- if event gap `> 10s` and `< 10min`, use `10s`
+- if event gap `>= 10min`, use `20s`
+
+Final replay delay is `mappedGap / speed`.
 
 ---
 
