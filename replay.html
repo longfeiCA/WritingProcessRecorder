@@ -104,6 +104,34 @@
       <div id="status" class="status">Ready.</div>
       <div id="metrics" class="metrics">Events: 0 | Cursor: 0</div>
     </section>
+
+    <section class="panel stats-panel" aria-live="polite">
+      <h2 class="stats-title">Session statistics</h2>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-label">Total duration</div>
+          <div id="statsTotalDuration" class="stat-value">0s</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Effective writing duration</div>
+          <div id="statsEffectiveDuration" class="stat-value">0s</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Pause count (&gt;5m)</div>
+          <div id="statsPauseCount" class="stat-value">0</div>
+          <div id="statsPauseCursors" class="stat-sub">Cursors: -</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Deletion rate</div>
+          <div id="statsDeletionRate" class="stat-value">0.0%</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Likely paste events</div>
+          <div id="statsLikelyPasteCount" class="stat-value">0</div>
+          <div id="statsLikelyPasteCursors" class="stat-sub">Cursors: -</div>
+        </div>
+      </div>
+    </section>
   </main>
 
   <script src="js/theme.js"></script>

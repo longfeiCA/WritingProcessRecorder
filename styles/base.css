@@ -208,6 +208,46 @@ input[type="file"] {
   font-size: 0.95rem;
 }
 
+.stats-panel {
+  display: grid;
+  gap: 10px;
+}
+
+.stats-title {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.stat-item {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 10px;
+  background: var(--field-bg);
+}
+
+.stat-label {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.stat-value {
+  margin-top: 4px;
+  font-weight: 600;
+}
+
+.stat-sub {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.85rem;
+  word-break: break-word;
+}
+
 @media (max-width: 640px) {
   .container {
     padding: 16px 12px 20px;
@@ -221,5 +261,9 @@ input[type="file"] {
   .status-wrap {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
   }
 }

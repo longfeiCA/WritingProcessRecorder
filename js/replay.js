@@ -13,18 +13,131 @@
   var progressText = document.getElementById("progressText");
   var statusEl = document.getElementById("status");
   var metricsEl = document.getElementById("metrics");
+  var statsTotalDurationEl = document.getElementById("statsTotalDuration");
+  var statsEffectiveDurationEl = document.getElementById("statsEffectiveDuration");
+  var statsPauseCountEl = document.getElementById("statsPauseCount");
+  var statsPauseCursorsEl = document.getElementById("statsPauseCursors");
+  var statsDeletionRateEl = document.getElementById("statsDeletionRate");
+  var statsLikelyPasteCountEl = document.getElementById("statsLikelyPasteCount");
+  var statsLikelyPasteCursorsEl = document.getElementById("statsLikelyPasteCursors");
 
   var session = null;
   var events = [];
 
   var TEN_SECONDS_MS = 10 * 1000;
   var TEN_MINUTES_MS = 10 * 60 * 1000;
+  var EFFECTIVE_PAUSE_CAP_MS = 5 * 60 * 1000;
+  var PASTE_MIN_STRUCTURED_CHARS = 20;
+  var PASTE_MIN_PLAIN_CHARS = 80;
 
   var speed = 5;
   var timerId = null;
   var isPlaying = false;
   var cursor = 0;
   var currentText = "";
+
+  function formatDuration(ms) {
+    var safeMs = Number.isFinite(ms) ? Math.max(0, ms) : 0;
+    var totalSeconds = Math.round(safeMs / 1000);
+    var hours = Math.floor(totalSeconds / 3600);
+    var minutes = Math.floor((totalSeconds % 3600) / 60);
+    var seconds = totalSeconds % 60;
+
+    if (hours > 0) {
+      return hours + "h " + String(minutes).padStart(2, "0") + "m " + String(seconds).padStart(2, "0") + "s";
+    }
+    if (minutes > 0) {
+      return minutes + "m " + String(seconds).padStart(2, "0") + "s";
+    }
+    return seconds + "s";
+  }
+
+  function isLikelyPasteInsert(text) {
+    if (typeof text !== "string") {
+      return false;
+    }
+    if (text.length >= PASTE_MIN_STRUCTURED_CHARS && (text.indexOf("\n") !== -1 || text.indexOf("\t") !== -1)) {
+      return true;
+    }
+    if (text.length >= PASTE_MIN_PLAIN_CHARS) {
+      return true;
+    }
+    return false;
+  }
+
+  function computeStats(eventsList) {
+    var totalDurationMs = 0;
+    var effectiveDurationMs = 0;
+    var pauseCount = 0;
+    var insertedChars = 0;
+    var deletedChars = 0;
+    var likelyPasteCount = 0;
+
+    if (!Array.isArray(eventsList) || eventsList.length === 0) {
+      return {
+        totalDurationMs: 0,
+        effectiveDurationMs: 0,
+        pauseCount: 0,
+        pauseCursors: [],
+        deletionRate: 0,
+        likelyPasteCount: 0,
+        likelyPasteCursors: []
+      };
+    }
+
+    var pauseCursors = [];
+    var likelyPasteCursors = [];
+
+    for (var i = 0; i < eventsList.length; i += 1) {
+      var event = eventsList[i];
+      var prevT = i === 0 ? 0 : eventsList[i - 1].t;
+      var rawGap = Number(event.t) - Number(prevT);
+      var gap = Number.isFinite(rawGap) ? Math.max(0, rawGap) : 0;
+
+      if (gap > EFFECTIVE_PAUSE_CAP_MS) {
+        pauseCount += 1;
+        pauseCursors.push(i === 0 ? "start-1" : String(i) + "-" + String(i + 1));
+      }
+      effectiveDurationMs += Math.min(gap, EFFECTIVE_PAUSE_CAP_MS);
+
+      if (event.type === "insert") {
+        insertedChars += typeof event.text === "string" ? event.text.length : 0;
+        if (isLikelyPasteInsert(event.text)) {
+          likelyPasteCount += 1;
+          likelyPasteCursors.push(i + 1);
+        }
+      }
+
+      if (event.type === "delete") {
+        deletedChars += Number.isInteger(event.length) && event.length > 0 ? event.length : 0;
+      }
+    }
+
+    totalDurationMs = Number(eventsList[eventsList.length - 1].t);
+    if (!Number.isFinite(totalDurationMs) || totalDurationMs < 0) {
+      totalDurationMs = 0;
+    }
+
+    return {
+      totalDurationMs: totalDurationMs,
+      effectiveDurationMs: effectiveDurationMs,
+      pauseCount: pauseCount,
+      pauseCursors: pauseCursors,
+      deletionRate: insertedChars > 0 ? deletedChars / insertedChars : 0,
+      likelyPasteCount: likelyPasteCount,
+      likelyPasteCursors: likelyPasteCursors
+    };
+  }
+
+  function updateStatsPanel(stats) {
+    statsTotalDurationEl.textContent = formatDuration(stats.totalDurationMs);
+    statsEffectiveDurationEl.textContent = formatDuration(stats.effectiveDurationMs);
+    statsPauseCountEl.textContent = String(stats.pauseCount);
+    statsPauseCursorsEl.textContent = "Cursors: " + (stats.pauseCursors.length > 0 ? stats.pauseCursors.join(", ") : "-");
+    statsDeletionRateEl.textContent = (stats.deletionRate * 100).toFixed(1) + "%";
+    statsLikelyPasteCountEl.textContent = String(stats.likelyPasteCount);
+    statsLikelyPasteCursorsEl.textContent = "Cursors: " + (stats.likelyPasteCursors.length > 0 ? stats.likelyPasteCursors.join(", ") : "-");
+  }
 
   function mapGapForReplay(rawGapMs) {
     if (rawGapMs <= TEN_SECONDS_MS) {
@@ -173,6 +286,7 @@
     events = session.events;
 
     resetPlaybackState();
+    updateStatsPanel(computeStats(events));
     setStatus("Session loaded from " + sourceLabel + ".", false);
   }
 
@@ -261,6 +375,7 @@
     progressBar.addEventListener("change", onProgressChange);
 
     renderText();
+    updateStatsPanel(computeStats([]));
     loadFromLocalStorage();
   }
 
